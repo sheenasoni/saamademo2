@@ -1,20 +1,45 @@
-name: runpythoncode
-
-on: [push, pull_request]
- 
+name: java execution
+on:
+  push:
+    branches:
+      - main
 jobs:
-  demo1:
+  compile:
     runs-on: ubuntu-latest
+    container:
+      image: openjdk:17-jdk-slim
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.x'
-    - name: Install dependencies
+    - name: Compile Java
+      run: javac Hello.java
+    - name: Save Class File
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    - name: run code
-      run: python hello.py
-    
+         dir
+         echo "Compiled Hello.class"
+    - name: Upload Class File
+      uses: actions/upload-artifact@v3
+      with:
+        name: Hello-class
+        path: Hello.class
+  run:
+    runs-on: ubuntu-latest
+    container:
+      image: openjdk:17-jdk-slim
+    needs: compile
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download Class File
+      uses: actions/download-artifact@v3
+      with:
+        name: Hello-class
+    - name: Run Java Program
+      run: java Hello
+  print_variable:
+  
+    runs-on: ubuntu-latest
+  
+    steps:
+    - name: Print STATUS
+      env:
+        STATUS: "Hello, System running in full capacity."
+      run: echo $STATUS
